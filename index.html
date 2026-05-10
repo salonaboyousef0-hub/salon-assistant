@@ -327,8 +327,7 @@
 </div>
 
 <script>
-const GEMINI_API_KEY = 'AIzaSyC0FxTmyIaEAka3PxLr32be4T4D_5kf5IY';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZdWHffCa91ZqLti1HbYx6B9hhbypJSkVIRGHKXHXfoiPQUvoHsnYOI8IuyZ3DCeT7GQ/exec';
 
 let isRecording = false;
 let recognition = null;
@@ -422,23 +421,18 @@ async function sendMessage() {
   showTyping();
 
   try {
-    const messages = [
-      { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-      { role: 'model', parts: [{ text: 'تمام، أنا مساعدك الشخصي لصالون الحلاقة. أنا هنا أساعدك!' }] },
-      ...conversationHistory
-    ];
-
-    const response = await fetch(GEMINI_URL, {
+    const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: messages })
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ message: text }),
+      redirect: 'follow'
     });
 
     const data = await response.json();
     hideTyping();
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'معلش، في مشكلة. حاول تاني.';
-    conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
+    const reply = data.reply || 'معلش، في مشكلة. حاول تاني.';
+    conversationHistory.push({ role: 'assistant', content: reply });
 
     const formatted = reply
       .replace(/```[\w]*\n([\s\S]*?)```/g, '<pre style="background:#0a0a0f;border:1px solid #2a2a3a;border-radius:8px;padding:10px;font-size:11px;direction:ltr;overflow-x:auto;margin-top:8px;color:#e8c96d">$1</pre>')
